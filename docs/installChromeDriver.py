@@ -18,6 +18,7 @@ pass
 
 
 # 개발자의 설명 
+# from : https://www.selenium.dev/documentation/webdriver/troubleshooting/errors/driver_location/
 # For now support:
 
 # ChromeDriver
