@@ -1,9 +1,13 @@
 # * 웹 크롤링 동작
 from selenium import webdriver
+
 # - chrome browser 열기
-browser = webdriver.Chrome()
+browser = webdriver.Chrome('../ChromeDriver.exe')
 # chrome class 생성자
 # module인지 생성자인지는 ()안에 변수 등이 들어가있는 유무 여부 등
+
+# Chrome WebDriver의 capabilities 속성 사용
+# capabilities = browser.capabilities
 
 # - 주소 https://www.w3schools.com/ 입력
 browser.get("https://www.w3schools.com/")
