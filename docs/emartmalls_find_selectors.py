@@ -12,9 +12,13 @@ browser.get("https://emart.ssg.com/disp/category.ssg?dispCtgId=6000214033")
 pass
 html = browser.page_source
 print(html)
+
+
 # 하나의 Elelemts만 가져오기
 from selenium.webdriver.common.by import By
 # 정보 획득 시 거의 대부분 사용할 기능
+
+
 # elements_path = browser.find_element( by = By.CSS_SELECTOR , value = "#ty_thmb_view > ul > li:nth-child(1) > div > a > div.mnemitem_tit > span.mnemitem_goods_tit")
 # or
 # selector = "#ty_thmb_view > ul > li:nth-child(1) > div > a > div.mnemitem_tit > span.mnemitem_goods_tit"
