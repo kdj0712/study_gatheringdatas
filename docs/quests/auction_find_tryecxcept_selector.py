@@ -8,13 +8,7 @@ browser = webdriver.Chrome(service=ChromeService(webdriver_manager_directory))
 capabilities = browser.capabilities
 
 browser.get("https://corners.auction.co.kr/corner/categorybest.aspx")
-
-pass
 html = browser.page_source
-print(html)
-
-
-# 하나의 Elelemts만 가져오기
 from selenium.webdriver.common.by import By
 # 정보 획득 시 거의 대부분 사용할 기능from selenium.webdriver.common.by import By
 
@@ -33,31 +27,22 @@ for element_item in element_bundle:
         pass
     finally:
         pass
+
     element_sale_price = element_item.find_element(by=By.CSS_SELECTOR, value="span.sale")
     sale_price = element_sale_price.text
 
-    try :
-        element_delivery_type = element_item.find_element(by=By.CSS_SELECTOR, value="div.info > div.icon > div")
-        delivery_type =[]
-        for i in range(len(element_delivery_type)):
-            deli_type = element_delivery_type[i].text
-            delivery_type.append(deli_type)
-    except :
-        delivery_type = []
-        pass
-    finally :
-        pass
-
+    delivery_types = []
+    element_delivery_types = element_item.find_element(by=By.CSS_SELECTOR, value="div.icon > div")
+    elements = element_delivery_types.text.split()
 
     print("title : "+ title)
     print("old price : " + old_price)
     print("sale price : " + sale_price)
-    if delivery_type:
-        print("delivery type : " + .join(delivery_type))
+    if elements:
+        for deliveries in elements:
+            print("delivery type : " + deliveries)
     else:
-        pass
-
-
-
-    # 브라우저 종료
+        print("delivery type :" + "")
+        
 browser.quit()
+            
