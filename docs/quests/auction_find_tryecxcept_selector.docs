@@ -1,0 +1,20 @@
+# 1개의 아이템을 기준
+# itembest_T > ul.uxb-img.first > li.first > div > div.info
+# 파일 내 사용 지점 : div.info
+
+# 아이템의 타이틀
+# itembest_T > ul.uxb-img.first > li.first > div > div.info > em > a
+# 파일 내 사용 지점 : div.info > em > a
+
+# 아이템의 원래 가격
+# itembest_T > ul.uxb-img.first > li.first > div > div.info > ul > li.c_price > span
+# 파일 내 사용 지점 : ul > li.c_price > span
+
+# 아이템의 할인 판매 가격
+# itembest_T > ul.uxb-img.first > li.first > div > div.info > ul > li.d_price > span.sale
+# 파일 내 사용 지점 : span.sale
+
+# 아이템의 배송 타입
+# itembest_T > ul.uxb-img.first > li.first > div > div.info > div.icon > div
+# 파일 내 사용 지점 : div.icon > div
+# 복수 개 만큼 존재가 가능
