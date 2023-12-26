@@ -7,6 +7,7 @@ import time
 chrome_options = Options()
 
 chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
+# 잦은 접속으로 로봇 호출이 나오기 전에 user-agent를 알려주어, 접속의 패널티의 가능성을 줄이는 기능
 
 webdriver_manager_directory = ChromeDriverManager().install()
 

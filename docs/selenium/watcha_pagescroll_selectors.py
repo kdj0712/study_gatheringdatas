@@ -30,15 +30,18 @@ previous_scrollHeight = 0
 
 while True:
     element_body.send_keys(Keys.END)
+    # key를 입력하는 효과를 주는 send_keys 기능을 이용하여, END 키를 적용하고
+    # 이동할 공간이 있다면 아래로 계속 이동하도록 한다.
     current_scrollheight = browser.execute_script("return document.body.scrollHeight")
+    # (Java Script의 기능을 사용하여)페이지의 전체 높이를 반환하여 계산한 값을 current_scrollheight 라는 변수로 선언한다.
     if previous_scrollHeight >= current_scrollheight:
+    # 만약 전체 높이와 비교하여 남아있는 공간이 없다면 행동을 멈추도록 선언한다.
         break
     else:
         previous_scrollHeight = current_scrollheight
+        # 그렇지 않다면 해당 내용이 같아질 떄까지 반복한다.
     time.sleep(1)
+    # 행동을 반복할 텀을 1초정도 준다. 반복이 진행되면서 페이지가 로딩이 될 여유를 준다.
     pass
-
-element_body.find_elements(by=By.CSS_SELECTOR,value="ul > div.css-13j4ly.egj9y8a4")
-
 
 browser.quit()
