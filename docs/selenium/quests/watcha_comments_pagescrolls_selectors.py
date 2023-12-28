@@ -10,9 +10,11 @@ def Connect(): # 전체 과정을 통합한 function의 이름으로 Connect라�
     from pymongo import MongoClient  #몽고 DB 콤파스를 Python 과 연동시킴
     mongoClient = MongoClient("mongodb://192.168.10.236:27017") # 몽고 DB 콤파스의 포트에 연결하는 변수 지정
     database = mongoClient["gatheringdatas"] # 해당 포트에 접속해서 database에 연결
-    collection = database['watcha_comments'] # 데이터베이스에서 watcha_comments 이라는 collection에 연결
-    return collection # collection이 반환되도록 지정
+    return database # collection이 반환되도록 지정
 
+collections = Connect()
+collection = collections['watcha_comments']
+# 데이터베이스에서 watcha_comments 이라는 collection에 연결
 chrome_options = Options()
 chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
 # 잦은 접속으로 로봇 호출이 나오기 전에 user-agent를 알려주어, 접속의 패널티의 가능성을 줄이는 기능
