@@ -23,5 +23,5 @@ browser.switch_to.frame('cafe_main')
 cafe_list = browser.find_elements(by=By.CSS_SELECTOR, value= "#main-area > div:nth-child(4) > table > tbody > tr")
 pass
 
-
+#mongoDB 저장
 browser.quit()
