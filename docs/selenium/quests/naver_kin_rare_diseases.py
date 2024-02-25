@@ -26,9 +26,10 @@ pass
 
 if os.path.isfile('last_processed.txt') and os.path.getsize('last_processed.txt') > 0:
     with open('last_processed.txt', 'r', encoding='utf-8') as f:
-        last_dise_name, last_page_num = f.read().split(",")
+        content = f.read().strip()
+        last_dise_name, last_page_num = content.rsplit(',', 1)
         last_dise_name = last_dise_name.strip('"')
-        last_page_num = last_page_num.strip('"')
+        last_page_num = int(last_page_num.strip('"'))
 
 else:
     last_dise_name = dise_names[0]
@@ -40,8 +41,8 @@ webdriver_manager_directory = ChromeDriverManager().install()
 options = Options()
 options.add_argument('--ignore-certificate-errors')
 driver = webdriver.Chrome(service=ChromeService(webdriver_manager_directory),options=options)
-driver.set_page_load_timeout(12) 
-driver.implicitly_wait(12)
+driver.set_page_load_timeout(10) 
+driver.implicitly_wait(10)
 apabilities = driver.capabilities
 for k in range(last_dise_index, len(dise_names)):
     if k == last_dise_index:
