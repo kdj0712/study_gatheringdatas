@@ -45,7 +45,6 @@ for page_num in range(1056938):
                 pass
             finally:
                 pass
-
             try:
                 element_question_content  = items.find_element(by=By.CSS_SELECTOR, value="div.c-heading._questionContentsArea.c-heading--default-old > div.c-heading__content")
                 question_content  = element_question_content.text
@@ -92,6 +91,6 @@ for page_num in range(1056938):
         driver.close()
         driver.switch_to.window(origin_tab)
         collection = Connect()
-        collection.insert_one({"question_title":question_title,"question_datetime":question_datetime,**answers})
+        collection.insert_one({"question_title":question_title,"question_content":question_content,"question_datetime":question_datetime,**answers})
     # 페이지 로딩 대기
 

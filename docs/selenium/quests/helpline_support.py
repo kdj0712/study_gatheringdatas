@@ -10,64 +10,65 @@ def Connect(): # 전체 과정을 통합한 function의 이름으로 Connect라�
     from pymongo import MongoClient  #몽고 DB 콤파스를 Python 과 연동시킴
     mongoClient = MongoClient("mongodb://trainings.iptime.org:48001/") # 몽고 DB 콤파스의 포트에 연결하는 변수 지정
     database = mongoClient["project"] # 해당 포트에 접속해서 database에 연결
-    collection = database['helpline_Symptom2'] # 데이터베이스에서 11st_comments 이라는 collection에 연결
+    collection = database['helpline_Support'] # 데이터베이스에서 11st_comments 이라는 collection에 연결
     return collection # collection이 반환되도록 지정
 
 webdriver_manager_directory = ChromeDriverManager().install()                    # 23.12.16 추가 구간
 driver = webdriver.Chrome(service=ChromeService(webdriver_manager_directory))
 capabilities = driver.capabilities
-for page_num in range(124):
-    driver.get(f"https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfList.do?menu=A0100&pageIndex={page_num+1}&fixRdizInfTab=&rdizCd=&schKor=&schEng=&schCcd=&schGuBun=dizNm&schText=&schSort=kcdCd&schOrder=desc")
-    origin_tab = driver.current_window_handle
-    html = driver.page_source
+for page_num in range(1,129):
+    driver.get(f"https://helpline.kdca.go.kr/cdchelp/ph/supbiz/selectMdepSupList.do?menu=B0102&pageIndex={page_num}&schGubun=tit&schSuplDcd=&schText=")
+    # origin_tab = driver.current_window_handle
+    # html = driver.page_source
     from selenium.webdriver.common.by import By
-    main_board = "#frm > div > table"
-    main_body = driver.find_elements(by=By.CSS_SELECTOR, value=main_board) 
-    into = "#frm > div > table > tbody > tr > td > a"
-    element_buttons = driver.find_elements(by=By.CSS_SELECTOR, value=into)
-    time.sleep(2)
-    for x in element_buttons:
-        x.click()
-        # bodies = "#cont_set"
-        # element_body = driver.find_elements(by=By.CSS_SELECTOR, value=bodies) 
-        
-        # for items in element_body:
+    time.sleep(1)
+  
+    table = driver.find_elements(by=By.CSS_SELECTOR, value= "#frm > div > table > tbody > tr")
+    for i in table:
         try:
-            disease_korean_title = driver.find_element(by=By.CSS_SELECTOR, value="#frm > div > table.listT2.help_list > tbody > tr > td.subject > em").text
+            disease_number = i.find_element(by=By.CSS_SELECTOR, value="th").text
         except:
-            disease_korean_title = ""
+            disease_number = ""
             pass
         finally:
             pass
 
         try:
-            related_diseases  = driver.find_element(by=By.CSS_SELECTOR, value="#frm > div > table.dic_viewT > tbody > tr:nth-child(1) > td:nth-child(2)").text
+            dise_name  = i.find_element(by=By.CSS_SELECTOR, value="td > dl > dt").text
         except: # 조건에 맞지 않는 것이 나와도 다른 액션을 취하지 않고 그냥 흘러가도록 지정함
-            related_diseases = ""
+            dise_name = ""
         finally:
             pass
 
         try:
-            diseases_symptoms = driver.find_element(by=By.CSS_SELECTOR, value="#frm > div > table.dic_viewT > tbody > tr:nth-child(2) > td:nth-child(2) > pre").text
+            KCD_code = i.find_element(by=By.CSS_SELECTOR, value="td > dl > dd > ul > li:nth-child(1)").text
             # 가져온 items의 내용물을 비교하여 value에 지정한 값과 같은 것을 찾는다면, 그것을 element_point라는 변수로 선언한다.
         except:
-            diseases_symptoms = ""
+            KCD_code = ""
             pass
         finally:
             pass
 
         try:
-            cause_diseases = driver.find_element(by=By.CSS_SELECTOR, value="#frm > div > table.dic_viewT > tbody > tr:nth-child(2) > td:nth-child(4)").text
+            sanjung_code = i.find_element(by=By.CSS_SELECTOR, value="td > dl > dd > ul > li:nth-child(2)").text
             # 가져온 items의 내용물을 비교하여 value에 지정한 값과 같은 것을 찾는다면, 그것을 element_point라는 변수로 선언한다.
         except:
-            cause_diseases = ""
+            sanjung_code = ""
+            pass
+        finally:
+            pass
+
+        try:
+            support_content = i.find_element(by=By.CSS_SELECTOR, value="td > dl > dd > ul > li:nth-child(3)").text
+            # 가져온 items의 내용물을 비교하여 value에 지정한 값과 같은 것을 찾는다면, 그것을 element_point라는 변수로 선언한다.
+        except:
+            support_content = ""
             pass
         finally:
             pass
 
         collection = Connect()
-        collection.insert_one({"disease_korean_title":disease_korean_title,"related_diseases":related_diseases,"diseases_symptoms":diseases_symptoms, "cause_diseases":cause_diseases})
+        collection.insert_one({"disease_number":disease_number,"dise_name":dise_name,"KCD_code":KCD_code, "sanjung_code":sanjung_code, "support_content":support_content})
         time.sleep(2)
-        driver.back()
     # 페이지 로딩 대기
 

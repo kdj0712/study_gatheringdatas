@@ -119,7 +119,7 @@ for k in range(last_dise_index, len(dise_names)):
                 driver.close()
                 driver.switch_to.window(origin_tab)
                 collection = Connect('project','naver_kin_rare_diseases')
-                collection.insert_one({"dise_name":dise_names[k],"question_title":question_title,"question_datetime":question_datetime,**answers})
+                collection.insert_one({"dise_name":dise_names[k],"question_title":question_title,"question_content":question_content,"question_datetime":question_datetime,**answers})
                 with open('last_processed.txt', 'w', encoding='utf-8') as f:
                     f.write(f'"{dise_names[k]}","{page_num}"')
             except TimeoutException:
