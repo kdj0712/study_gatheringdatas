@@ -103,63 +103,63 @@ capabilities = driver.capabilities
     # 페이지 로딩 대기
 collection = Connect()
 
-for page_num in range(124):
-    driver.get(f"https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfList.do?menu=A0100&pageIndex={page_num+1}")
-    time.sleep(2)  # 페이지 로딩 대기
-    table_rows = driver.find_elements(by=By.CSS_SELECTOR, value="#frm > div > table > tbody > tr")
+# for page_num in range(124):
+driver.get(f"https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfList.do?menu=A0100&pageIndex=125")
+time.sleep(1)  # 페이지 로딩 대기
+table_rows = driver.find_elements(by=By.CSS_SELECTOR, value="#frm > div > table > tbody > tr")
 
-    for row in table_rows:
-        data = {}
-        try:
-            full_text = row.find_element(by=By.CSS_SELECTOR, value="td:nth-child(2) > dl > dt").text
-            # '\n'을 기준으로 문자열을 분리하고, 첫 번째 부분만 사용합니다.
-            dise_name_kr = full_text.split('\n')[0]
-            # 이제 dise_name_kr에는 '\n'과 그 이후의 부분이 제거된 상태로 저장됩니다.
-            data['dise_name_kr'] = dise_name_kr
-        except:
-            data['dise_name_kr'] = ""
+for row in table_rows:
+    data = {}
+    try:
+        full_text = row.find_element(by=By.CSS_SELECTOR, value="td:nth-child(2) > dl > dt").text
+        # '\n'을 기준으로 문자열을 분리하고, 첫 번째 부분만 사용합니다.
+        dise_name_kr = full_text.split('\n')[0]
+        # 이제 dise_name_kr에는 '\n'과 그 이후의 부분이 제거된 상태로 저장됩니다.
+        data['dise_name_kr'] = dise_name_kr
+    except:
+        data['dise_name_kr'] = ""
 
-        try:
-            data['dise_name_en'] = row.find_element(by=By.CSS_SELECTOR, value="td:nth-child(2) > dl > dt > p").text
-        except:
-            data['dise_name_en'] = ""
+    try:
+        data['dise_name_en'] = row.find_element(by=By.CSS_SELECTOR, value="td:nth-child(2) > dl > dt > p").text
+    except:
+        data['dise_name_en'] = ""
 
-        try:
-            KCD_code = row.find_element(by=By.XPATH, value='.//td[1]/dl/dd/ul/li[4]').text
-            data['dise_KCD_code'] = KCD_code.replace('KCD코드 : ', '').strip()
-        except:
-            data['dise_KCD_code'] = ""
+    try:
+        KCD_code = row.find_element(by=By.XPATH, value='.//td[1]/dl/dd/ul/li[4]').text
+        data['dise_KCD_code'] = KCD_code.replace('KCD코드 : ', '').strip()
+    except:
+        data['dise_KCD_code'] = ""
 
-        try:
-            spc = row.find_element(by=By.XPATH, value='.//td[1]/dl/dd/ul/li[5]').text
-            data['dise_spc_code'] = spc.replace('산정특례 특정기호 : ', '').strip()
-        except:
-            data['dise_spc_code'] = ""
+    try:
+        spc = row.find_element(by=By.XPATH, value='.//td[1]/dl/dd/ul/li[5]').text
+        data['dise_spc_code'] = spc.replace('산정특례 특정기호 : ', '').strip()
+    except:
+        data['dise_spc_code'] = ""
 
-        try:
-            group = row.find_element(by=By.XPATH, value='.//td[1]/dl/dd/ul/li[1]').text
-            data['dise_group'] = group.replace('항목분류 : ', '').strip()
-        except:
-            data['dise_group'] = ""
+    try:
+        group = row.find_element(by=By.XPATH, value='.//td[1]/dl/dd/ul/li[1]').text
+        data['dise_group'] = group.replace('항목분류 : ', '').strip()
+    except:
+        data['dise_group'] = ""
 
-        try:
-            support = row.find_element(by=By.XPATH, value='.//td[1]/dl/dd/ul/li[3]').text
-            data['dise_support'] = support.replace('의료비지원 : ', '').strip()
-        except:
-            data['dise_support'] = ""
+    try:
+        support = row.find_element(by=By.XPATH, value='.//td[1]/dl/dd/ul/li[3]').text
+        data['dise_support'] = support.replace('의료비지원 : ', '').strip()
+    except:
+        data['dise_support'] = ""
 
-        try:
-            link_element = row.find_element(by=By.CSS_SELECTOR, value="a[title='질환정보 바로가기']")
-            onclick_attr = link_element.get_attribute('onclick')
-            match = re.search(r"fn_moveDetail\('(.+?)'\);", onclick_attr)
-            if match:
-                detail_code = match.group(1)
-                url_template = 'https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfDetail.do?menu=A0100&rdizCd={}'
-                data['dise_url'] = url_template.format(detail_code)
-            else:
-                data['dise_url'] = ""
-        except:
+    try:
+        link_element = row.find_element(by=By.CSS_SELECTOR, value="a[title='질환정보 바로가기']")
+        onclick_attr = link_element.get_attribute('onclick')
+        match = re.search(r"fn_moveDetail\('(.+?)'\);", onclick_attr)
+        if match:
+            detail_code = match.group(1)
+            url_template = 'https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfDetail.do?menu=A0100&rdizCd={}'
+            data['dise_url'] = url_template.format(detail_code)
+        else:
             data['dise_url'] = ""
-        
-        collection.insert_one(data)
-        time.sleep(2)
+    except:
+        data['dise_url'] = ""
+    
+    collection.insert_one(data)
+    time.sleep(1)
