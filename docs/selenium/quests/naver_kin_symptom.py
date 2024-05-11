@@ -5,6 +5,8 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from selenium.webdriver.common.by import By
+import os
 
 def Connect(): # 전체 과정을 통합한 function의 이름으로 Connect라는 이름을 지정한다
     from pymongo import MongoClient  #몽고 DB 콤파스를 Python 과 연동시킴
@@ -12,6 +14,15 @@ def Connect(): # 전체 과정을 통합한 function의 이름으로 Connect라�
     database = mongoClient["data_analysis"] # 해당 포트에 접속해서 database에 연결
     collection = database['naver_cafe_Symptom'] # 데이터베이스에서 11st_comments 이라는 collection에 연결
     return collection # collection이 반환되도록 지정
+
+if os.path.isfile('last_processed_naver.txt') and os.path.getsize('last_processed_naver.txt') > 0:
+    with open('last_processed_naver.txt', 'r', encoding='utf-8') as f:
+        last_info = f.read().strip()
+        last_dise_name, last_page = last_info.split(',')
+        last_page = int(last_page)  # 페이지 번호를 정수로 변환
+else:
+    last_dise_name = None  # 파일이 없거나 비어있는 경우 초기값 설정
+    last_page = 0
 
 webdriver_manager_directory = ChromeDriverManager().install()                    # 23.12.16 추가 구간
 driver = webdriver.Chrome(service=ChromeService(webdriver_manager_directory))
@@ -34,100 +45,160 @@ dise_list = [
     {"모세혈관확장성운동실조" : "G11.3"}, {"X-연관 열성 척수소뇌성 운동실조" : "G11.1" }, {"헌팅톤무도병" : "G10"},
     {"헌팅톤병" : "G10"}, {"자가면역 뇌염" : "G04.8"}, {"라스무센 뇌염" : "G04.8"}
 ]
+driver.get("https://nid.naver.com/nidlogin.login?url=https%3A%2F%2Fsection.cafe.naver.com%2Fca-fe%2Fhome")
+
+def move_to_next_page(driver, current_page, counts):
+    # 현재 페이지가 10 이하인 경우, 직접 페이지 번호를 클릭
+    if current_page <= 10:
+        next_page_xpath = f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{current_page + 1}]'
+    else:
+    # 현재 페이지가 10 초과이고, 마지막 페이지 범위에 있지 않은 경우, '다음' 버튼 클릭
+        page_position_in_group = (current_page - 1) % 10 + 1
+        if page_position_in_group < 10:
+            next_page_xpath = f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{page_position_in_group + 2}]'
+        else:
+            # 페이지 그룹의 마지막 페이지에서는 '다음' 버튼(11번째 버튼)을 클릭
+            next_page_xpath = '/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[12]'
+    next_button = driver.find_element(by=By.XPATH, value=next_page_xpath)
+    next_button.click()
 
 
+for dise in dise_list:
+    dise_name = list(dise.keys())[0]  # 현재 사전의 첫 번째 키를 가져옴  
+    dise_code = list(dise.values())[0]
+    # 웹사이트 열기
+    driver.get(f"https://section.cafe.naver.com/ca-fe/home/search/articles?q={dise_name}")
+    time.sleep(2)
+    totals = driver.find_element(by=By.CSS_SELECTOR, value ="#mainContainer > div.content > div.section_home_search > div.search_item_wrap > div.board_head > div.sub_text").text
+    totals = totals.replace(",","")
+    total = int(totals)
+    counts = round(total / 12)
+    if counts == 1:
+        table = driver.find_elements(by=By.CSS_SELECTOR, value ="#mainContainer > div.content > div.section_home_search")
+        articles = driver.find_elements(by=By.CSS_SELECTOR, value ="div.search_item_wrap > div.item_list > div > div")
+        origin_tab = driver.current_window_handle
+        for article in articles:
+            cafe = article.find_element(by=By.CSS_SELECTOR, value ="#mainContainer > div.content > div > div.search_item_wrap > div.item_list > div > div > div > a.cafe_info > span.cafe_name").text
+            con_title = article.find_element(by=By.CSS_SELECTOR, value ="div.search_item_wrap > div.item_list > div > div > div > a:nth-child(1) > strong")
+            con_title.click()
+            all_tabs = driver.window_handles
+            new_tab = [tab for tab in all_tabs if tab != origin_tab][0]
+            driver.switch_to.window(new_tab)
+            driver.switch_to.frame('cafe_main') #프레임 전환
+            time.sleep(2)
+            elements_switched_tab = driver.find_elements(by=By.CSS_SELECTOR,value="#app > div > div > div.ArticleContentBox")
+            for items in elements_switched_tab:
+                try :
+                    time.sleep(2)
+                    title=items.find_element(by=By.CSS_SELECTOR, value='#app > div > div > div.ArticleContentBox > div.article_header > div.ArticleTitle > div > h3').text # 글 제목 추출
+                    name=items.find_element(by=By.CSS_SELECTOR, value='.nickname').text #작성자 추출
+                    date=items.find_element(by=By.CSS_SELECTOR, value='#app > div > div > div.ArticleContentBox > div.article_header > div.WriterInfo > div.profile_area > div.article_info > span.date').text #작성일 추출
+                    contents=items.find_element(by=By.CSS_SELECTOR, value='#app > div > div > div.ArticleContentBox > div.article_container > div.article_viewer > div > div.content.CafeViewer > div > div').text #글내용 추출
+                    num = items.find_element(by=By.CSS_SELECTOR, value='#app > div > div > div.ArticleContentBox > div.article_container > div.ReplyBox > div.box_left > a > strong').text # 댓글 개수
+                    num = int(num)
+                    reply_list = []
+                    if num != 0:
+                        for j in range(num):
+                            try:
+                                reply = items.find_element(by=By.XPATH, value=f'/html/body/div/div/div/div[2]/div[2]/div[6]/ul/li[{j+1}]/div/div/div[2]/p/span').text
+                            except:
+                                reply = items.find_element(by=By.XPATH, value=f'/html/body/div/div/div/div[2]/div[2]/div[5]/ul/li[{j+1}]/div/div/div[2]/p/span').text
+                            reply_list.append(reply)
+                    else:
+                        reply_list = ""
+                except :
+                    pass
+                data={
+                'dise_name' : dise_name,
+                'dise_code' : dise_code,
+                'cafe' : cafe,  # 카페 이름
+                'title' : title,
+                'name' : name,
+                'date' : date,
+                'contents' : contents,
+                'review' : reply_list
+                }
+                collection = Connect()
+                collection.insert_one(data)
+                driver.close()
+                driver.switch_to.window(origin_tab)
+        with open('last_processed_naver.txt', 'w', encoding='utf-8') as f:
+            f.write(f"{dise_name},{current_page}")
 
+    elif counts > 1:
+        current_page = 1
+        while current_page <= counts and current_page <= 100:  # 여기를 수정했습니다.
+            table = driver.find_elements(by=By.CSS_SELECTOR, value ="#mainContainer > div.content > div.section_home_search")
+            articles = driver.find_elements(by=By.CSS_SELECTOR, value ="div.search_item_wrap > div.item_list > div > div")
+            origin_tab = driver.current_window_handle
+            for article in articles:
+                cafe = article.find_element(by=By.CSS_SELECTOR, value ="#mainContainer > div.content > div > div.search_item_wrap > div.item_list > div > div > div > a.cafe_info > span.cafe_name").text
+                con_title = article.find_element(by=By.CSS_SELECTOR, value ="div.search_item_wrap > div.item_list > div > div > div > a:nth-child(1) > strong")
+                con_title.click()
+                all_tabs = driver.window_handles
+                new_tab = [tab for tab in all_tabs if tab != origin_tab][0]
+                driver.switch_to.window(new_tab)
+                driver.switch_to.frame('cafe_main')
+                time.sleep(2)
+                elements_switched_tab = driver.find_elements(by=By.CSS_SELECTOR,value="#app > div > div > div.ArticleContentBox")
+                for items in elements_switched_tab:
+                    try:
+                        time.sleep(2)
+                        title = items.find_element(by=By.CSS_SELECTOR, value='#app > div > div > div.ArticleContentBox > div.article_header > div.ArticleTitle > div > h3').text
+                        name = items.find_element(by=By.CSS_SELECTOR, value='.nickname').text
+                        date = items.find_element(by=By.CSS_SELECTOR, value='#app > div > div > div.ArticleContentBox > div.article_header > div.WriterInfo > div.profile_area > div.article_info > span.date').text
+                        contents = items.find_element(by=By.CSS_SELECTOR, value='#app > div > div > div.ArticleContentBox > div.article_container > div.article_viewer > div > div.content.CafeViewer > div > div').text
+                        num = items.find_element(by=By.CSS_SELECTOR, value='#app > div > div > div.ArticleContentBox > div.article_container > div.ReplyBox > div.box_left > a > strong').text
+                        num = int(num)
+                        reply_list = []
+                        if num != 0:
+                            for j in range(num):
+                                try:
+                                    reply = items.find_element(by=By.XPATH, value=f'/html/body/div/div/div/div[2]/div[2]/div[6]/ul/li[{j+1}]/div/div/div[2]/p/span').text
+                                except:
+                                    reply = items.find_element(by=By.XPATH, value=f'/html/body/div/div/div/div[2]/div[2]/div[5]/ul/li[{j+1}]/div/div/div[2]/p/span').text
+                                reply_list.append(reply)
+                        else:
+                            reply_list = ""
+                    except:
+                        pass
+                    data = {
+                        'dise_name': dise_name,
+                        'dise_code': dise_code,
+                        'cafe': cafe,
+                        'title': title,
+                        'name': name,
+                        'date': date,
+                        'contents': contents,
+                        'review': reply_list
+                    }
+                    collection = Connect()
+                    collection.insert_one(data)
 
-
-
-
-driver.get("https://section.cafe.naver.com/ca-fe/home")
-
-
-
-
-
-
-
-
-
-
-
-for page_num in range(1056938):
-    driver.get(f"https://kin.naver.com/search/list.naver?query=%EC%A6%9D%EC%83%81&page={page_num+1}")
-    origin_tab = driver.current_window_handle
-    html = driver.page_source
-    from selenium.webdriver.common.by import By
-    main_board = "#s_content > div.section"
-    element_body = driver.find_elements(by=By.CSS_SELECTOR, value=main_board) 
-    main_body = driver.find_elements(by=By.CSS_SELECTOR, value=main_board) 
-    main_question_title = "#s_content > div.section > ul > li > dl > dt > a"
-    main_questions = driver.find_elements(by=By.CSS_SELECTOR,value=main_question_title)
-
-    for question in main_questions:
-        question.click()
-        # driver.execute_script("window.open('https://www.google.com');")
-        all_tabs = driver.window_handles
-        new_tab = [tab for tab in all_tabs if tab != origin_tab][0]
-        driver.switch_to.window(new_tab)
-        elements_switched_tab = driver.find_elements(by=By.CSS_SELECTOR,value="#content")
-
-        for items in elements_switched_tab:
-            try:
-                element_question_title = items.find_element(by=By.CSS_SELECTOR, value="div.c-heading._questionContentsArea.c-heading--default-old > div.c-heading__title > div > div.title")
-                
-                question_title = element_question_title.text
-            except:
-                question_title = ""
-                pass
-            finally:
-                pass
-            try:
-                element_question_content  = items.find_element(by=By.CSS_SELECTOR, value="div.c-heading._questionContentsArea.c-heading--default-old > div.c-heading__content")
-                question_content  = element_question_content.text
-            except: # 조건에 맞지 않는 것이 나와도 다른 액션을 취하지 않고 그냥 흘러가도록 지정함
-                question_content = ""
-            finally:
-                pass
-
-            try:
-                element_question_datetime = items.find_element(by=By.CSS_SELECTOR, value="div.c-userinfo__left > span:nth-child(2)")
-                # 가져온 items의 내용물을 비교하여 value에 지정한 값과 같은 것을 찾는다면, 그것을 element_point라는 변수로 선언한다.
-                question_datetime = element_question_datetime.text
-                # element_point을 텍스트화 한 것을 comment라는 변수로 선언
-            except:
-                question_datetime = ""
-                pass
-            finally:
+                    driver.close()
+                    driver.switch_to.window(origin_tab)
                 pass
             
-            answers = {}
-            answer_elements = driver.find_elements(by=By.CSS_SELECTOR, value="div._endContents.c-heading-answer__content")
-            for i in range(1, 4):
-                if i <= len(answer_elements):
-                    answer_element = answer_elements[i-1]
-                    content_elements = answer_element.find_elements(by=By.CSS_SELECTOR, value="div._endContentsText.c-heading-answer__content-user")
-                    if content_elements:
-                        content = content_elements[0].text
-                    else:
-                        content = None
+            if current_page < counts:
+                with open('last_processed_naver.txt', 'w', encoding='utf-8') as f:
+                    f.write(f"{dise_name},{current_page}")
+                move_to_next_page(driver,current_page,counts)
+            current_page += 1
+            time.sleep(1)  # 페이지 로딩 대기
 
-                    datetime_elements = answer_element.find_elements(by=By.CSS_SELECTOR, value="p.c-heading-answer__content-date")
-                    if datetime_elements:
-                        datetime = datetime_elements[0].text
-                    else:
-                        datetime = None
-                else:
-                    content = None
-                    datetime = None
 
-                # 답변의 순서를 컬럼 이름의 일부로 사용합니다.
-                answers[f"answer{i}_content"] = content
-                answers[f"answer{i}_datetime"] = datetime
 
-        driver.close()
-        driver.switch_to.window(origin_tab)
-        collection = Connect()
-        collection.insert_one({"question_title":question_title,"question_content":question_content,"question_datetime":question_datetime,**answers})
-    # 페이지 로딩 대기
+
+
+
+
+
+
+
+
+
+
+
+
+
 
