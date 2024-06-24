@@ -41,92 +41,50 @@ def find_next_button(xpath):
     try:
         return driver.find_element(by=By.XPATH, value=xpath)
     except NoSuchElementException:
-        return None
+        return
 def move_to_next_page(driver, current_page, counts):
-
-    # 현재 페이지가 10 이하인 경우, 직접 페이지 번호를 클릭
-    if counts <= 10:
-        # 현재 페이지가 마지막 페이지가 아닌 경우에만 다음 페이지로 이동
-        if current_page <= counts:
-            next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{current_page + 1}]',
-                               f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{current_page + 1}]']
-            for xpath in next_page_xpath:
-                next_button = find_next_button(xpath)
-                if next_button:
-                    next_button.click()
+        # 현재 페이지가 10 이하인 경우, 직접 페이지 번호를 클릭
+    if current_page <= 10:
+        next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{current_page + 1}]',
+                            f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{current_page + 1}]']
+        for xpath in next_page_xpath:
+            next_button = find_next_button(xpath)
+            if next_button:
+                next_button.click()
 
     else:
-        # 현재 페이지가 10 이하인 경우, 직접 페이지 번호를 클릭
-        if current_page <= 10:
-            next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{current_page + 1}]',
-                               f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{current_page + 1}]']
+        # 현재 페이지가 10 초과이고, 마지막 페이지 범위에 있지 않은 경우, '다음' 버튼 클릭
+        page_position_in_group = (current_page - 1) % 10 + 1
+        if page_position_in_group < 10:
+            next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{page_position_in_group + 2}]',
+                                f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{page_position_in_group + 2}]']
             for xpath in next_page_xpath:
                 next_button = find_next_button(xpath)
                 if next_button:
                     next_button.click()
 
         else:
-            # 현재 페이지가 10 초과이고, 마지막 페이지 범위에 있지 않은 경우, '다음' 버튼 클릭
-            page_position_in_group = (current_page - 1) % 10 + 1
-            if page_position_in_group < 10:
-                next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{page_position_in_group + 2}]',
-                                   f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{page_position_in_group + 2}]']
-                for xpath in next_page_xpath:
-                    next_button = find_next_button(xpath)
-                    if next_button:
-                        next_button.click()
-
-            else:
-                # 페이지 그룹의 마지막 페이지에서는 '다음' 버튼(11번째 버튼)을 클릭
-                next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{page_position_in_group + 2}]',
-                                   f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{page_position_in_group + 2}]']
-                for xpath in next_page_xpath:
-                    next_button = find_next_button(xpath)
-                    if next_button:
-                        next_button.click()
+            # 페이지 그룹의 마지막 페이지에서는 '다음' 버튼(11번째 버튼)을 클릭
+            next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{page_position_in_group + 2}]',
+                                f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{page_position_in_group + 2}]']
+            for xpath in next_page_xpath:
+                next_button = find_next_button(xpath)
+                if next_button:
+                    next_button.click()
 
 def move_to_next_page_for_last(driver, current_page, counts):
-
-    # 현재 페이지가 10 이하인 경우, 직접 페이지 번호를 클릭
-    if counts <= 10:
-        # 현재 페이지가 마지막 페이지가 아닌 경우에만 다음 페이지로 이동
-        if current_page <= counts:
-            next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{current_page}]',
-                               f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{current_page}]']
-            for xpath in next_page_xpath:
-                next_button = find_next_button(xpath)
-                if next_button:
-                    next_button.click()
-
+    if current_page <= 10:
+        next_page_xpath = f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{current_page}]'
     else:
-        # 현재 페이지가 10 이하인 경우, 직접 페이지 번호를 클릭
-        if current_page <= 10:
-            next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{current_page}]',
-                               f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{current_page}]']
-            for xpath in next_page_xpath:
-                next_button = find_next_button(xpath)
-                if next_button:
-                    next_button.click()
-
-        else:
-            # 현재 페이지가 10 초과이고, 마지막 페이지 범위에 있지 않은 경우, '다음' 버튼 클릭
-            page_position_in_group = (current_page - 1) % 10 + 1
-            if page_position_in_group < 10:
-                next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{page_position_in_group + 1}]',
-                                   f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{page_position_in_group + 1}]']
-                for xpath in next_page_xpath:
-                    next_button = find_next_button(xpath)
-                    if next_button:
-                        next_button.click()
-
-            else:
-                # 페이지 그룹의 마지막 페이지에서는 '다음' 버튼(11번째 버튼)을 클릭
-                next_page_xpath = [f'/html/body/div/div/div[2]/div[2]/div/div[2]/div[3]/button[{page_position_in_group + 1}]',
-                                   f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{page_position_in_group +1}]']
-                for xpath in next_page_xpath:
-                    next_button = find_next_button(xpath)
-                    if next_button:
-                        next_button.click()
+    # 현재 페이지가 10 초과이고, 마지막 페이지 범위에 있지 않은 경우, '다음' 버튼 클릭
+        page_position_in_group = (current_page - 1) % 10 + 1
+        if page_position_in_group < 10:
+            next_page_xpath = f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[{page_position_in_group + 1}]'
+        elif (current_page-1) % 10 + 1 == 1:
+            # 페이지 그룹의 마지막 페이지에서는 '다음' 버튼(11번째 버튼)을 클릭
+            next_page_xpath = f'/html/body/div/div/div[2]/div[2]/div[1]/div[2]/div[3]/button[12]'
+    next_button = driver.find_element(by=By.XPATH, value=next_page_xpath)
+    next_button.click()
 
 all_done = False 
 
@@ -296,10 +254,12 @@ for dise in dise_list:
         current_page = 1
         while current_page <= counts and current_page <= 100:  # 여기를 수정했습니다.
             if current_page != last_page and current_page < last_page+1:
-                time.sleep(1)
-                move_to_next_page(driver, current_page, counts)
-                current_page += 1
-            elif current_page == counts+1:
+                while current_page != last_page and current_page < last_page:
+                    time.sleep(2)
+                    move_to_next_page(driver, current_page, counts)
+                    current_page += 1
+
+            if current_page == counts+1:
                 current_index = None
                 for i, dise in enumerate(dise_list):
                     if dise_name in dise:
@@ -421,34 +381,36 @@ for dise in dise_list:
                         driver.close()
                         driver.switch_to.window(origin_tab)  # 원래의 탭으로 돌아감
                         continue  # 다음 article로 넘어감  
-                if current_page < counts:
-                    current_page += 1
-                    move_to_next_page_for_last(driver,current_page,counts)
-                    with open('last_processed_naver.txt', 'w', encoding='utf-8') as f:
-                        f.write(f"{dise_name},{current_page}")
-                    time.sleep(1)  # 페이지 로딩 대기
-                elif current_page == counts:
-                    current_index = None
-                    for i, dise in enumerate(dise_list):
-                        if dise_name in dise:
-                            current_index = i
-                            break
+            if current_page < counts:
+                current_page += 1
+                move_to_next_page_for_last(driver,current_page,counts)
+                with open('last_processed_naver.txt', 'w', encoding='utf-8') as f:
+                    f.write(f"{dise_name},{current_page}")
+                time.sleep(1)  # 페이지 로딩 대기
+            elif current_page == counts:
+                current_page += 1
+                current_index = None
+                for i, dise in enumerate(dise_list):
+                    if dise_name in dise:
+                        current_index = i
+                        break
 
-                    # 다음 dise_name과 dise_code 가져오기
-                    if current_index is not None:
-                        next_index = current_index + 1
-                        if next_index < len(dise_list):  # 리스트의 끝에 도달하지 않았다면
-                            next_dise = dise_list[next_index]
-                            dise_name = list(next_dise.keys())[0]
-                            dise_code = next_dise[dise_name]
-                            last_page = 1  # last_page 초기화
-                            # 파일 업데이트
-                            with open('last_processed_naver.txt', 'w', encoding='utf-8') as f:
-                                f.write(f'{dise_name},{last_page}')
-                        else:
-                            print("리스트의 끝에 도달했습니다.")
-                            all_done = True  # 모든 처리 완료
-                            break
+                # 다음 dise_name과 dise_code 가져오기
+                if current_index is not None:
+                    next_index = current_index + 1
+                    if next_index < len(dise_list):  # 리스트의 끝에 도달하지 않았다면
+                        next_dise = dise_list[next_index]
+                        dise_name = list(next_dise.keys())[0]
+                        dise_code = next_dise[dise_name]
+                        last_page = 1  # last_page 초기화
+                        # 파일 업데이트
+                        with open('last_processed_naver.txt', 'w', encoding='utf-8') as f:
+                            f.write(f'{dise_name},{last_page}')
+                        break
+                    else:
+                        print("리스트의 끝에 도달했습니다.")
+                        all_done = True  # 모든 처리 완료
+                        break
     if all_done:
         break  # 바깥쪽 반복문 종료
 
